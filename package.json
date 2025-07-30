@@ -8,8 +8,8 @@
     "start": "next start"
   },
   "dependencies": {
-    "@simplewebauthn/browser": "^7.5.0",
-    "@simplewebauthn/server": "^7.5.0",
+    "@simplewebauthn/browser": "^7.4.2",
+    "@simplewebauthn/server": "^7.4.2"
     "@supabase/supabase-js": "^2.39.0",
     "next": "14.1.0",
     "react": "18.2.0",
