@@ -1,6 +1,8 @@
+// File: app/page.tsx
 export default function HomePage() {
   return (
     <main className="min-h-screen flex flex-col items-center justify-center p-8">
+      <img src="/logo.svg" alt="Logo" className="w-24 h-24 mb-6" />
       <h1 className="text-4xl font-bold mb-4">FIDO2 Passwordless Demo</h1>
       <p className="text-lg text-center max-w-xl mb-6">
         Questo progetto dimostra l'autenticazione passwordless con FIDO2/WebAuthn,
