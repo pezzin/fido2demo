@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyRegistration } from '@/lib/webauthn';
 import { createUser } from '@/lib/supabaseClient';
-
-// Import delle funzioni di gestione challenge dall'altro file API
-// In una implementazione reale, useresti Redis o database condiviso
-const challenges = new Map<string, string>();
+import challengeStore from '@/lib/challengeStore';
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,9 +15,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Recupera la challenge memorizzata
-    // Nota: in una app reale dovresti condividere questo stato tra le API
-    // Per ora assumiamo che sia stata memorizzata da generate-registration-options
-    const expectedChallenge = challenges.get(email);
+    const expectedChallenge = challengeStore.get(email);
     if (!expectedChallenge) {
       return NextResponse.json(
         { error: 'Challenge not found or expired. Please restart registration.' },
@@ -53,7 +48,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Rimuovi la challenge
-    challenges.delete(email);
+    challengeStore.remove(email);
 
     return NextResponse.json({
       verified: true,
@@ -67,17 +62,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
-
-// Funzioni helper per gestire le challenge (condivise tra API)
-export function storeChallenge(email: string, challenge: string): void {
-  challenges.set(email, challenge);
-}
-
-export function getStoredChallenge(email: string): string | undefined {
-  return challenges.get(email);
-}
-
-export function removeStoredChallenge(email: string): void {
-  challenges.delete(email);
 }
