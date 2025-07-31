@@ -13,8 +13,8 @@ export async function POST(req: Request) {
   });
 
   if (result.verified && result.registrationInfo) {
-    const { credentialPublicKey, counter } = result.registrationInfo;
-    const credentialID = result.registrationInfo.credential.credentialID;
+    const { counter } = result.registrationInfo;
+    const { credentialID, credentialPublicKey } = result.registrationInfo.credential;
 
     await supabase.from('users').upsert({
       email,
