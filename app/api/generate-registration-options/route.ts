@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generateRegistrationOptionsForUser } from '@/lib/webauthn';
 import { getUserByEmail } from '@/lib/supabaseClient';
-
-// Mappa temporanea per memorizzare le challenge
-const challenges = new Map<string, string>();
+import challengeStore from '@/lib/challengeStore';
 
 export async function POST(request: NextRequest) {
   try {
@@ -32,7 +30,7 @@ export async function POST(request: NextRequest) {
     );
 
     // Memorizza la challenge
-    challenges.set(email, options.challenge);
+    challengeStore.store(email, options.challenge);
 
     return NextResponse.json(options);
 
@@ -43,14 +41,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
-
-// Funzione per recuperare la challenge (usata da altre API)
-export function getStoredChallenge(email: string): string | undefined {
-  return challenges.get(email);
-}
-
-// Funzione per rimuovere la challenge (usata da altre API)
-export function removeStoredChallenge(email: string): void {
-  challenges.delete(email);
 }
