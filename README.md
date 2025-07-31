@@ -1,5 +1,8 @@
 # 🔐 FIDO2 Passwordless Login Demo
 
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/import/project?template=https://github.com/pezzin/fido2demo)
+![GitHub last commit](https://img.shields.io/github/last-commit/pezzin/fido2demo?style=flat-square)
+
 Demo completo per l'autenticazione passwordless tramite **FIDO2/WebAuthn**, integrata con:
 - 🧠 Supabase per la gestione utenti e credenziali
 - 🚀 Deploy su Vercel
