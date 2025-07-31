@@ -148,3 +148,7 @@ export function base64URLToArrayBuffer(base64URL: string): ArrayBuffer {
   }
   return bytes.buffer;
 }
+
+// Alias per compatibilità con i file API esistenti
+export const getRegistrationOptions = generateRegistrationOptionsForUser;
+export const getAuthenticationOptions = generateAuthenticationOptionsForUser;
