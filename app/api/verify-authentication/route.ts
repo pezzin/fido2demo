@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAuthenticationResponse } from '@simplewebauthn/server';
 import { supabase } from '@/lib/supabaseClient';
-import { isobase64url } from '@simplewebauthn/server/helpers';
+import { isoBase64url } from '@simplewebauthn/server/helpers';
 
 export async function POST(request: NextRequest) {
   try {
