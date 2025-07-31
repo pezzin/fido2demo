@@ -37,13 +37,30 @@ export async function verifyRegistration(body: any) {
   return result;
 }
 
-export async function verifyAuthentication(body: any, expectedChallenge: string) {
+export async function verifyAuthentication({
+  credential,
+  expectedChallenge,
+  expectedCredentialID,
+  expectedCredentialPublicKey,
+  expectedCounter,
+}: {
+  credential: any;
+  expectedChallenge: string;
+  expectedCredentialID: Buffer;
+  expectedCredentialPublicKey: Buffer;
+  expectedCounter: number;
+}) {
   const result = await verifyAuthenticationResponse({
-    response: body.assertion,
+    response: credential,
     expectedChallenge,
     expectedOrigin,
     expectedRPID: rpID,
-    authenticator: body.authenticator,
+    authenticator: {
+      credentialID: expectedCredentialID,
+      credentialPublicKey: expectedCredentialPublicKey,
+      counter: expectedCounter,
+    },
   });
+
   return result;
 }
