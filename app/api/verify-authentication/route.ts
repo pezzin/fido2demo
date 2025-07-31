@@ -29,12 +29,9 @@ export async function POST(request: NextRequest) {
       expectedChallenge,
       expectedOrigin: process.env.ORIGIN || 'https://fido2demo.vercel.app',
       expectedRPID: process.env.RPID || 'fido2demo.vercel.app',
-      authenticator: {
-        credentialID: isoBase64URL.toBuffer(user.credentialID),
-        credentialPublicKey: Buffer.from(user.credentialPublicKey, 'base64'),
-        counter: user.counter,
-        transports: user.transports || [],
-      },
+      expectedCredentialID: isoBase64URL.toBuffer(user.credentialID),
+      expectedCredentialPublicKey: Buffer.from(user.credentialPublicKey, 'base64'),
+      expectedCounter: user.counter,
     });
 
     if (!result.verified) {
