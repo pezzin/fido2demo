@@ -3,6 +3,8 @@ import { verifyAuthentication } from '@/lib/webauthn';
 import { updateUserCounter, supabase } from '@/lib/supabaseClient';
 import challengeStore from '@/lib/challengeStore';
 
+type AuthenticatorTransport = 'ble' | 'hybrid' | 'internal' | 'nfc' | 'usb';
+
 export async function POST(request: NextRequest) {
   try {
     const { email, response } = await request.json();
@@ -46,7 +48,7 @@ export async function POST(request: NextRequest) {
       id: user.credential_id,
       publicKey: Buffer.from(user.public_key, 'base64url'),
       counter: user.counter,
-      transports: user.transports ? JSON.parse(user.transports) : undefined,
+      transports: user.transports ? JSON.parse(user.transports) as AuthenticatorTransport[] : undefined,
     };
 
     // Verifica la risposta di autenticazione
