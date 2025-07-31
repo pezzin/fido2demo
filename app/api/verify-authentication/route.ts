@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAuthentication } from '@/lib/webauthn';
 import { updateUserCounter, supabase } from '@/lib/supabaseClient';
-
-// Mappa per le challenge condivisa
-const challenges = new Map<string, string>();
+import challengeStore from '@/lib/challengeStore';
 
 export async function POST(request: NextRequest) {
   try {
@@ -34,7 +32,7 @@ export async function POST(request: NextRequest) {
 
     const user = users[0];
     const challengeKey = email || user.email || 'anonymous';
-    const expectedChallenge = challenges.get(challengeKey);
+    const expectedChallenge = challengeStore.get(challengeKey);
 
     if (!expectedChallenge) {
       return NextResponse.json(
@@ -70,7 +68,7 @@ export async function POST(request: NextRequest) {
     await updateUserCounter(user.email, newCounter);
 
     // Rimuovi la challenge
-    challenges.delete(challengeKey);
+    challengeStore.remove(challengeKey);
 
     return NextResponse.json({
       verified: true,
@@ -88,17 +86,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
-
-// Funzioni helper per gestire le challenge
-export function storeChallenge(key: string, challenge: string): void {
-  challenges.set(key, challenge);
-}
-
-export function getStoredChallenge(key: string): string | undefined {
-  return challenges.get(key);
-}
-
-export function removeStoredChallenge(key: string): void {
-  challenges.delete(key);
 }
