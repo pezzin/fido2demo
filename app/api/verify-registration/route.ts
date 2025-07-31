@@ -1,17 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyRegistration } from '@/lib/fido';
-import { supabase } from '@/lib/supabase';
+import { verifyRegistration } from '../../../lib/fido';
+import { supabase } from '../../../lib/supabase';
 
-export async function POST(req: NextRequest) {
-  const body = await req.json();
-  const { email, credential } = body;
-
+export async function POST(request: NextRequest) {
   try {
-    const result = await verifyRegistration(body);
+    const body = await request.json();
+    const { credential, email } = body;
+
+    const result = await verifyRegistration({
+      credential,
+      expectedChallenge: credential.response.clientDataJSON,
+      email,
+    });
 
     if (result.verified && result.registrationInfo) {
-      const { credential } = result.registrationInfo!;
-      const { credentialID, credentialPublicKey, counter } = credential;
+      const { credentialID, credentialPublicKey, counter } = result.registrationInfo;
 
       await supabase.from('users').upsert({
         email,
@@ -19,11 +22,13 @@ export async function POST(req: NextRequest) {
         credentialPublicKey: Buffer.from(credentialPublicKey).toString('base64'),
         counter,
       });
-    }
 
-    return NextResponse.json({ verified: result.verified });
-  } catch (error) {
-    console.error('Registration verification failed:', error);
-    return NextResponse.json({ error: 'Registration verification failed' }, { status: 400 });
+      return NextResponse.json({ ok: true });
+    } else {
+      return NextResponse.json({ ok: false }, { status: 400 });
+    }
+  } catch (err) {
+    console.error(err);
+    return NextResponse.json({ ok: false, error: 'Internal server error' }, { status: 500 });
   }
 }
