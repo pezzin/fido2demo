@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyAuthentication } from '@simplewebauthn/server';
+import { verifyAuthenticationResponse } from '@simplewebauthn/server';
 import { supabase } from '@/lib/supabaseClient';
 import { base64url } from '@simplewebauthn/server/helpers';
 
@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
 
     const expectedChallenge = user.currentChallenge;
 
-    const result = await verifyAuthentication(credential, {
+    const result = await verifyAuthenticationResponse(credential, {
       expectedChallenge,
       expectedOrigin: process.env.ORIGIN || 'https://fido2demo.vercel.app',
       expectedRPID: process.env.RPID || 'fido2demo.vercel.app',
