@@ -21,12 +21,12 @@ export async function POST(request: NextRequest) {
 
     const expectedChallenge = user.currentChallenge;
 
-    const result = await verifyAuthenticationResponse(credential, {
+    const result = await verifyAuthenticationResponse({
+      response: credential,
       expectedChallenge,
       expectedOrigin: process.env.ORIGIN || 'https://fido2demo.vercel.app',
       expectedRPID: process.env.RPID || 'fido2demo.vercel.app',
-      expectedCredentialID: Buffer.from(user.credentialID, 'base64'),
-      expectedCredentialPublicKey: Buffer.from(user.credentialPublicKey, 'base64'),
+      expectedCredentialID: isoBase64URL.toBuffer(user.credentialID),
       expectedCounter: user.counter,
     });
 
