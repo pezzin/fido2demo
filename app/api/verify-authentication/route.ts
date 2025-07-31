@@ -12,10 +12,10 @@ export async function POST(req: Request) {
     counter: data.counter,
   };
   
-  const result = await verifyAuthentication(assertion, {
-    authenticator,
-    expectedChallenge,
-  });
+  const result = await verifyAuthentication(
+    { assertion, authenticator },
+    assertion.response.clientDataJSON
+  );
 
   if (result.verified) {
     await supabase.from('users').update({ counter: result.authenticationInfo!.newCounter }).eq('email', email);
