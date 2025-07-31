@@ -1,54 +1,104 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyAuthenticationResponse } from '@simplewebauthn/server';
-import { isoBase64URL } from '@simplewebauthn/server/helpers';
-import { supabase } from '@/lib/supabaseClient';
+import { verifyAuthentication } from '@/lib/webauthn';
+import { updateUserCounter, supabase } from '@/lib/supabaseClient';
+
+// Mappa per le challenge condivisa
+const challenges = new Map<string, string>();
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { email, credential } = body;
+    const { email, response } = await request.json();
 
-    if (!email || !credential) {
-      return NextResponse.json({ error: 'Missing parameters' }, { status: 400 });
+    if (!response) {
+      return NextResponse.json(
+        { error: 'Response is required' },
+        { status: 400 }
+      );
     }
 
-    const { data: user, error } = await supabase
-      .from('fido_users')
+    // Per il completamento, dobbiamo trovare l'utente tramite la credenziale
+    const credentialId = response.id;
+    
+    // Cerca l'utente nel database tramite credential_id
+    const { data: users, error } = await supabase
+      .from('users')
       .select('*')
-      .eq('email', email)
-      .single();
+      .eq('credential_id', credentialId);
 
-    if (error || !user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    if (error || !users || users.length === 0) {
+      return NextResponse.json(
+        { error: 'User not found for this credential' },
+        { status: 404 }
+      );
     }
 
-    const expectedChallenge = user.currentChallenge;
+    const user = users[0];
+    const challengeKey = email || user.email || 'anonymous';
+    const expectedChallenge = challenges.get(challengeKey);
 
-    const result = await verifyAuthenticationResponse({
-      response: credential,
+    if (!expectedChallenge) {
+      return NextResponse.json(
+        { error: 'Challenge not found or expired. Please restart authentication.' },
+        { status: 400 }
+      );
+    }
+
+    // Prepara la credenziale per la verifica
+    const credential = {
+      id: user.credential_id,
+      publicKey: Buffer.from(user.public_key, 'base64url'),
+      counter: user.counter,
+      transports: user.transports ? JSON.parse(user.transports) : undefined,
+    };
+
+    // Verifica la risposta di autenticazione
+    const verification = await verifyAuthentication(
       expectedChallenge,
-      expectedOrigin: process.env.ORIGIN || 'https://fido2demo.vercel.app',
-      expectedRPID: process.env.RPID || 'fido2demo.vercel.app',
-      authenticator: {
-        credentialID: isoBase64URL.toBuffer(user.credentialID),
-        credentialPublicKey: Buffer.from(user.credentialPublicKey, 'base64'),
-        counter: user.counter,
+      response,
+      credential
+    );
+
+    if (!verification.verified || !verification.authenticationInfo) {
+      return NextResponse.json(
+        { error: 'Authentication verification failed' },
+        { status: 400 }
+      );
+    }
+
+    // Aggiorna il counter dell'autenticatore
+    const { newCounter } = verification.authenticationInfo;
+    await updateUserCounter(user.email, newCounter);
+
+    // Rimuovi la challenge
+    challenges.delete(challengeKey);
+
+    return NextResponse.json({
+      verified: true,
+      user: {
+        email: user.email,
+        id: user.email,
       },
+      message: 'Authentication successful'
     });
 
-    if (!result.verified) {
-      return NextResponse.json({ error: 'Authentication failed' }, { status: 401 });
-    }
-
-    // Update counter if needed
-    await supabase
-      .from('fido_users')
-      .update({ counter: result.authenticationInfo.newCounter })
-      .eq('email', email);
-
-    return NextResponse.json({ verified: true });
   } catch (error) {
-    console.error(error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    console.error('Verify authentication error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
+}
+
+// Funzioni helper per gestire le challenge
+export function storeChallenge(key: string, challenge: string): void {
+  challenges.set(key, challenge);
+}
+
+export function getStoredChallenge(key: string): string | undefined {
+  return challenges.get(key);
+}
+
+export function removeStoredChallenge(key: string): void {
+  challenges.delete(key);
 }
