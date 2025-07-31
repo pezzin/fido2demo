@@ -3,6 +3,8 @@ import { verifyRegistration } from '@/lib/webauthn';
 import { createUser } from '@/lib/supabaseClient';
 import challengeStore from '@/lib/challengeStore';
 
+type AuthenticatorTransport = 'ble' | 'hybrid' | 'internal' | 'nfc' | 'usb';
+
 export async function POST(request: NextRequest) {
   try {
     const { email, response } = await request.json();
@@ -44,7 +46,7 @@ export async function POST(request: NextRequest) {
       credential_id: Buffer.from(credentialID).toString('base64url'),
       public_key: Buffer.from(credentialPublicKey).toString('base64url'),
       counter,
-      transports: response.response?.transports,
+      transports: response.response?.transports as AuthenticatorTransport[],
     });
 
     // Rimuovi la challenge
