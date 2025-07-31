@@ -23,7 +23,6 @@ export async function POST(req: Request) {
     expectedCredentialID: Buffer.from(user.credentialID, 'base64'),
     expectedCredentialPublicKey: Buffer.from(user.credentialPublicKey, 'base64'),
     expectedCounter: user.counter,
-    email,
   });
 
   if (result.verified && result.authenticationInfo) {
