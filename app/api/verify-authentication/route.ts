@@ -1,28 +1,36 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { verifyAuthentication } from '@/lib/webauthn';
 import { supabase } from '@/lib/supabaseClient';
 
-export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json();
-    const { assertion, authenticator, email } = body;
+export async function POST(req: Request) {
+  const body = await req.json();
+  const { credential, email } = body;
 
-    const result = await verifyAuthentication(
-      { assertion, authenticator },
-      assertion.response.clientDataJSON,
-    );
+  // Recupera l'utente da Supabase
+  const { data: user, error } = await supabase
+    .from('users')
+    .select('*')
+    .eq('email', email)
+    .single();
 
-    if (result.verified && result.authenticationInfo) {
-      await supabase.from('users')
-        .update({ counter: result.authenticationInfo.newCounter })
-        .eq('email', email);
-
-      return NextResponse.json({ ok: true });
-    } else {
-      return NextResponse.json({ ok: false }, { status: 400 });
-    }
-  } catch (err) {
-    console.error(err);
-    return NextResponse.json({ ok: false, error: 'Internal server error' }, { status: 500 });
+  if (error || !user) {
+    return NextResponse.json({ verified: false, error: 'Utente non trovato' }, { status: 404 });
   }
+
+  const result = await verifyAuthentication({
+    credential,
+    expectedChallenge: credential.response.clientDataJSON,
+    expectedCredentialID: Buffer.from(user.credentialID, 'base64'),
+    expectedCredentialPublicKey: Buffer.from(user.credentialPublicKey, 'base64'),
+    expectedCounter: user.counter,
+    email,
+  });
+
+  if (result.verified && result.authenticationInfo) {
+    const { newCounter } = result.authenticationInfo;
+
+    await supabase.from('users').update({ counter: newCounter }).eq('email', email);
+  }
+
+  return NextResponse.json(result);
 }
