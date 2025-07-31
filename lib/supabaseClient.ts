@@ -1,5 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 
+type AuthenticatorTransport = 'ble' | 'hybrid' | 'internal' | 'nfc' | 'usb';
+
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
@@ -20,7 +22,7 @@ export interface DatabaseUser {
   credential_id: string;
   public_key: string;
   counter: number;
-  transports?: string[];
+  transports?: AuthenticatorTransport[];
   created_at?: string;
   updated_at?: string;
 }
@@ -49,7 +51,7 @@ export async function createUser(userData: {
   credential_id: string;
   public_key: string;
   counter: number;
-  transports?: string[];
+  transports?: AuthenticatorTransport[];
 }): Promise<DatabaseUser> {
   const { data, error } = await supabase
     .from('users')
