@@ -21,8 +21,8 @@ export async function POST(request: NextRequest) {
 
       allowCredentials = [{
         id: user.credential_id,
-        type: 'public-key',
-        transports: user.transports ? JSON.parse(user.transports) : undefined,
+        type: 'public-key' as const,
+        transports: user.transports ? JSON.parse(user.transports) as AuthenticatorTransport[] : undefined,
       }];
     }
 
