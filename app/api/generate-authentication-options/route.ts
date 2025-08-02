@@ -14,7 +14,11 @@ export async function POST(request: NextRequest) {
       const user = await getUserByEmail(email);
       if (!user) {
         return NextResponse.json(
-          { error: 'User not found' },
+          {
+            error: 'User not found',
+            message: 'User not found. Please register to continue.',
+            signupUrl: '/register',
+          },
           { status: 404 }
         );
       }
