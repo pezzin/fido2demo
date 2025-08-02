@@ -6,25 +6,38 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
 
   async function handleLogin() {
-    const res = await fetch('/api/generate-authentication-options', {
-      method: 'POST',
-      body: JSON.stringify({ email }),
-    });
-    const options = await res.json();
+    try {
+      const res = await fetch('/api/generate-authentication-options', {
+        method: 'POST',
+        body: JSON.stringify({ email }),
+      });
+      if (!res.ok) {
+        const errText = await res.text();
+        alert(`Errore nella generazione delle opzioni: ${errText}`);
+        return;
+      }
+      const options = await res.json();
+      if (!options?.challenge) {
+        alert('Opzioni di autenticazione non valide.');
+        return;
+      }
+      const assertion = await startAuthentication(options);
 
-    const assertion = await startAuthentication(options);
+      const verify = await fetch('/api/verify-authentication', {
+        method: 'POST',
+        body: JSON.stringify({ response: assertion, email }),
+      });
 
-    const verify = await fetch('/api/verify-authentication', {
-      method: 'POST',
-      body: JSON.stringify({ response: assertion, email }),
-    });
+      const verificationJSON = await verify.json();
 
-    const verificationJSON = await verify.json();
-
-    if (verificationJSON.verified) {
-      alert('Login completato!');
-    } else {
-      alert('Errore di autenticazione.');
+      if (verificationJSON.verified) {
+        alert('Login completato!');
+      } else {
+        alert('Errore di autenticazione.');
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Errore sconosciuto';
+      alert(`Autenticazione fallita: ${message}`);
     }
   }
 
