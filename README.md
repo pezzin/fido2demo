@@ -28,7 +28,8 @@ Demo completo per l'autenticazione passwordless tramite **FIDO2/WebAuthn**, inte
 ├── public/
 │   └── logo.svg                        # Logo personalizzato
 ├── README.md
-└── .env.local                          # Variabili ambiente
+├── .env.local                          # Variabili ambiente
+└── .env.example                        # Esempio configurazione
 ```
 
 ## 🔧 Variabili ambiente richieste
@@ -38,6 +39,9 @@ NEXT_PUBLIC_SUPABASE_URL=https://<your-project>.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=<your-anon-key>
 NEXT_PUBLIC_SITE_URL=https://<your-site>.vercel.app
 ```
+
+Copiate il file `.env.example` in `.env.local` e sostituite i valori con le
+credenziali del vostro progetto Supabase e l'URL del sito.
 
 ## 🧱 Supabase Schema SQL
 

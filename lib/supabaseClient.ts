@@ -22,7 +22,7 @@ export interface DatabaseUser {
   credential_id: string;
   public_key: string;
   counter: number;
-  transports?: AuthenticatorTransport[];
+  transports?: string | null;
   created_at?: string;
   updated_at?: string;
 }
