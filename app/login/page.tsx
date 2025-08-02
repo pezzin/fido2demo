@@ -19,7 +19,9 @@ export default function LoginPage() {
       body: JSON.stringify({ response: assertion, email }),
     });
 
-    if ((await verify.json()).verified) {
+    const verificationJSON = await verify.json();
+
+    if (verificationJSON.verified) {
       alert('Login completato!');
     } else {
       alert('Errore di autenticazione.');
