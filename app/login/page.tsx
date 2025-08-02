@@ -16,7 +16,7 @@ export default function LoginPage() {
 
     const verify = await fetch('/api/verify-authentication', {
       method: 'POST',
-      body: JSON.stringify({ assertion, email }),
+      body: JSON.stringify({ response: assertion, email }),
     });
 
     if ((await verify.json()).verified) {
