@@ -1,0 +1,6 @@
+node_modules/
+.env.local
+.env.*.local
+.DS_Store
+next-env.d.ts
+package-lock.json
