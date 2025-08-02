@@ -14,12 +14,16 @@ export default function RegisterPage() {
 
     const credential = await startRegistration(options);
 
-    await fetch('/api/verify-registration', {
+    const verify = await fetch('/api/verify-registration', {
       method: 'POST',
-      body: JSON.stringify({ credential, email }),
+      body: JSON.stringify({ response: credential, email }),
     });
 
-    alert('Registrazione completata!');
+    if ((await verify.json()).verified) {
+      alert('Registrazione completata!');
+    } else {
+      alert('Errore nella registrazione.');
+    }
   }
 
   return (
