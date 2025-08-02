@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { generateAuthenticationOptionsForUser } from '@/lib/webauthn';
 import { getUserByEmail } from '@/lib/supabaseClient';
 import challengeStore from '@/lib/challengeStore';
+import type { AuthenticatorTransport } from '@simplewebauthn/types';
 
 export async function POST(request: NextRequest) {
   try {
