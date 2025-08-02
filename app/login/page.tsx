@@ -12,8 +12,24 @@ export default function LoginPage() {
         body: JSON.stringify({ email }),
       });
       if (!res.ok) {
-        const errText = await res.text();
-        alert(`Errore nella generazione delle opzioni: ${errText}`);
+        try {
+          const errorData = await res.json();
+          if (errorData?.error === 'User not found') {
+            const msg = 'Utente non trovato. Vuoi registrarti?';
+            if (errorData?.signupUrl && window.confirm(msg)) {
+              window.location.href = errorData.signupUrl;
+            } else {
+              alert('Utente non trovato. Registrati per continuare.');
+            }
+          } else {
+            alert(
+              `Errore nella generazione delle opzioni: ${errorData?.error || 'errore sconosciuto'}`
+            );
+          }
+        } catch {
+          const errText = await res.text();
+          alert(`Errore nella generazione delle opzioni: ${errText}`);
+        }
         return;
       }
       const options = await res.json();
